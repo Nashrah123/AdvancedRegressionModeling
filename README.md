@@ -1,2 +1,2 @@
-# AdvancedRegressionModeling
+# AdvancedRegressionModeling_R-Stan
 ## R & Stan
