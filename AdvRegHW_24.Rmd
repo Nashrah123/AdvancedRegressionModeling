@@ -1,0 +1,69 @@
+---
+title: "AdvRegMod"
+author: "Nashrah Ahmed"
+date: "April 30, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rstanarm)
+library(brms)
+library(arm)
+library(dplyr)
+library(rstan)
+library(tidyverse)
+```
+
+##3.4
+```{r, message=FALSE, warning=FALSE, results = 'hide'}
+#simulate new dataset of CD4 percentages - same size and ages of original dataset - for the final time point of the study and record average CD4 percentage in this sample... repeat 1000 times (post predict) and compare the distribution to the ovserved CD4 percentage at the final time point for actual data..
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+hiv <- read.csv ("allvar.csv")
+hiv$y <- sqrt(hiv$CD4PCT)
+
+#age in years at the beginning of the study
+hiv$age_b <- hiv$baseage
+#age in years at the time of measurement
+hiv$age_m <- hiv$visage      
+hiv$time <- hiv$visage - hiv$baseage
+hiv2 <- na.omit(hiv)
+
+fit <- stan_glmer(y ~ time + (factor(treatmnt) + age_b + (1 | newpid)), data = hiv2)
+
+summary_table <- hiv2 %>% 
+  group_by(newpid) %>%                           
+  summarise(age_b = mean(baseage), time = max(time), treatmnt = 1)
+
+PPD <- posterior_predict(fit, newdata = summary_table)
+sample <- sample(PPD, 1000)
+plot(density((exp(sample)/ 1000), from = 0, to = 1), main = "", las = 1)
+
+```
+```{r}
+#difference in means
+summary_table1 <- hiv2 %>% 
+  group_by(newpid) %>%                           
+  summarise(y = mean(y), time = max(time)) %>% 
+  summarise(y = mean(y))
+print(summary_table1)
+```
+
+```{r}
+mean1 <- mean(sample)
+print(mean1)
+```
+
+##3.5
+```{r, message=FALSE, warning=FALSE, results="hide", cache=TRUE}
+srrs2 <- read.table ("http://www.stat.columbia.edu/~gelman/arm/Examples/radon/srrs2.dat", header=T, sep = ",")
+
+radon <- srrs2 %>% 
+  group_by(zip) %>%                           
+  mutate(sample = n())
+
+#fit2 <- stan_glmer(activity ~ floor + factor(typebldg) + sample + (1 | zip), data = radon)
+```
+![fit2:results.](/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling/image/HW4.png)

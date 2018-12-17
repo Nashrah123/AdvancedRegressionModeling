@@ -1,0 +1,77 @@
+---
+title: "Untitled"
+author: "Nashrah Ahmed"
+date: "April 17, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(reshape2)
+library(tidyr)
+
+```
+
+##Adv Reg & Multilevel Models: 2.1
+```{r}
+#create 7x7x2 array of data (kept countries for use later)
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+
+df <- read.delim2("pairs.txt", header = TRUE, sep = ",", dec = ".")
+write.table(df, file="pairs.dat", row.names=TRUE)
+pairs <- read.table("pairs.dat", header = TRUE)
+
+df <- read.delim2("judges.txt", header = TRUE, sep = ",", dec = ".")
+write.table(df, file="judges.dat", row.names=TRUE)
+judges <- read.table("judges.dat", header = TRUE)
+
+df <- read.delim2("criteria.txt", header = TRUE, sep = " ", dec = ".")
+write.table(df, file="criteria.dat", row.names=TRUE)
+criteria <- read.table("criteria.dat", header = TRUE)
+
+j1 <- criteria %>% 
+     group_by(id) %>% summarise(judge1 = paste(judge1, collapse="/ "))
+j2 <- criteria %>% 
+     group_by(id) %>% summarise(judge2 = paste(judge2, collapse="/ "))
+j3 <- criteria %>% 
+     group_by(id) %>% summarise(judge3 = paste(judge3, collapse="/ "))
+j4 <- criteria %>% 
+     group_by(id) %>% summarise(judge4 = paste(judge4, collapse="/ "))
+j5 <- criteria %>% 
+     group_by(id) %>% summarise(judge5 = paste(judge5, collapse="/ "))
+j6 <- criteria %>% 
+     group_by(id) %>% summarise(judge6 = paste(judge6, collapse="/ "))
+j7 <- criteria %>%
+     group_by(id) %>% summarise(judge7 = paste(judge7, collapse="/ "))
+
+j <- Reduce(function(x,y) merge(x, y, by = "id"),
+       list(j1,j2,j3,j4,j5,j6,j7))
+
+pc <- criteria %>% 
+     group_by(id) %>% summarise(paircriterion = paste(paircriterion, collapse="/ "))
+
+final <- Reduce(function(x,y) merge(x, y, by = "id"),
+       list(pairs,judges,pc,j))
+head(final)
+```
+```{r}
+#create 98 x 4 matrix 
+final2 <- gather(criteria, paircriterion, judge1, judge2, judge3, judge4, judge5, judge6, judge7, na.rm = FALSE, convert = FALSE)
+final3 <- gather(criteria, paircriterion, judge1, na.rm = FALSE, convert = FALSE)
+names(final3) <- c("paircriterion", "score", "judge", "x")
+final3$judgeid1 <- gsub("id", "judge1", final3$judge)
+final3 <- subset(final3, select = -c(judge, x))
+final3$judgeid <- rep(1:7, each=2)
+final3$skaterid <- final3$judgeid
+final3 <- subset(final3, select = -c(judgeid1))
+dim(final3)
+```
+```{r}
+#add new column for whether skater and judge are from same country (1,0)
+final$judgeid <- rep(1:7, each=1)
+final$mcountry <- ifelse(as.character(final$country.x)==as.character(final$country.y),1,0)
+
+finalc <- merge(final3, final[ , c("judgeid", "mcountry")], by = c("judgeid"), all = TRUE)
+dim(finalc)
+```

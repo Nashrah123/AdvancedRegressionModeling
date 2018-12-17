@@ -1,0 +1,153 @@
+---
+title: "AdvRegMod"
+author: "Nashrah Ahmed"
+date: "April 15, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rstanarm)
+library(dplyr)
+library(broom) # get lm output (coefficients) as a dataframe
+library(reshape2)
+library(purrr)
+library(WDI)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+library(tibble)
+library(data.table)
+
+```
+
+##Adv Reg & Multilevel Models: 2.1
+```{r}
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+df <- read.delim2("apt.txt", header = TRUE, sep = " ", dec = ".")
+write.table(df, file="apt.dat", row.names=TRUE)
+apt <- read.table("apt.dat", header = TRUE)
+
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+df1 <- read.delim2("dist.txt", header = TRUE, sep = " ", dec = ".")
+write.table(df1, file="dist.dat", row.names=TRUE)
+dist <- read.table("dist.dat", header = TRUE)
+
+```
+
+```{r}
+apt$dist <- as.factor(apt$dist)
+with(apt,table(y, dist))
+
+#fit <- stan_glmer(y ~ defects + poor + race + (1|dist), data = apt)
+
+```
+$$ Y_{i} = \alpha_{i} + \beta  Defects_{i} + \beta  Poor_{i} + {1|Distance}_{i} $$
+
+```{r}
+ad <- merge(apt,dist,left=outer)
+
+#fit2 <- stan_glmer(y ~ defects + poor + race + dist.defects + dist.poor + (1|dist), data = ad)
+
+```
+$$ Y_{i} = \alpha_{i} + \beta  Defects_{i} + \beta  Poor_{i} + \beta  Distance.Defects_{i} + \beta  Distance.Poor_{i} + {1|Distance}_{i} $$
+```{r}
+hiv <- read.csv ("allvar.csv")
+hiv$y <- sqrt(hiv$CD4PCT)
+
+#age in years at the beginning of the study
+hiv$age_b <- hiv$baseage
+#age in years at the time of measurement
+hiv$age_m <- hiv$visage      
+hiv$time <- hiv$visage - hiv$baseage
+hiv2 <- na.omit(hiv)
+
+ggplot(hiv2, aes(x=time,y=y,group=newpid)) + 
+    geom_line() + 
+    geom_point()
+
+```
+
+```{r}
+#lm <- lm(y ~ time, data = hiv2)
+#ggplot(hiv2, aes(lm(y ~ time, data = hiv2)))
+#geom_smooth(method="lm",se=FALSE,na.rm=TRUE,fullrange=T)
+
+new_df <- split(hiv2, hiv2$newpid)
+
+df <- new_df %>%
+  map(~ lm(y ~ time, data = .)) %>%
+  map(~ coef(.)) %>%
+  map(2) %>% 
+  bind_rows() %>% 
+  t %>% #tranpose rows and columns
+  as.data.frame() %>%
+  setDT(keep.rownames=TRUE) %>% 
+  setNames(c("id","coeff")) %>% 
+  arrange(desc(coeff))
+
+df1 <- new_df %>%
+  map(~ lm(y ~ time, data = .)) %>%
+  map(~ coef(.)) %>%
+  map(1) %>% 
+  bind_rows() %>% 
+  t %>% #tranpose rows and columns
+  as.data.frame() %>%
+  setDT(keep.rownames=TRUE) %>% 
+  setNames(c("id","intercept")) %>% 
+  arrange(desc(intercept))
+head(df1)
+
+df_final <- merge(df,df1,by="id")
+df_final <- na.omit(df_final)
+```
+```{r}
+
+#graph - this does not look great 
+ggplot(df_final, aes(x=intercept,y=coeff)) + 
+    geom_abline(intercept=df_final$intercept,slope=df_final$coeff)
+
+```
+
+```{r}
+#SUM TREATMENT & AVG BASEAGE 
+summary_table <- hiv2 %>% 
+  group_by(newpid) %>%                           
+  summarise(avg_age = mean(baseage), sum_treat = sum(treatmnt))
+
+hiv2$id <- hiv2$newpid 
+
+hiv3 <- merge(hiv2,df_final,by="id")
+hiv3 <- na.omit(hiv3)
+
+hiv4 <- split(hiv3, hiv3$id)
+
+#lm(coef ~ treatmnt + baseage, data = hiv3)
+
+df2 <- hiv4 %>%
+  map(~ lm(coeff ~ treatmnt + baseage, data = .)) %>%
+  map(~ coef(.)) %>%
+  map(1) %>% 
+  bind_rows() %>% 
+  t %>% #tranpose rows and columns
+  as.data.frame() %>%
+  setDT(keep.rownames=TRUE) %>% 
+  setNames(c("id","coeff")) %>% 
+  arrange(desc(coeff))
+
+df3 <- hiv4 %>%
+  map(~ lm(intercept ~ treatmnt + baseage, data = .)) %>%
+  map(~ coef(.)) %>%
+  map(1) %>% 
+  bind_rows() %>% 
+  t %>% #tranpose rows and columns
+  as.data.frame() %>%
+  setDT(keep.rownames=TRUE) %>% 
+  setNames(c("id","coeff")) %>% 
+  arrange(desc(coeff))
+
+head(df3)
+
+#between-child models - may need some additional help understanding what we are trying to do
+
+```

@@ -1,0 +1,69 @@
+---
+title: "AvRegModHW"
+author: "Nashrah Ahmed"
+date: "April 10, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(quantreg)
+library(reshape2)
+library(ggplot2)
+library(arm)
+```
+
+#Exercise 6 (a), Chapter 18
+```{r}
+cows <- read.table("http://www.stat.columbia.edu/~gelman/arm/examples/cows/cow.dat", skip=4, header=TRUE)
+cows$level <- cows$level * 10
+
+#consider the simple regression of mean daily milk fat on the level of additive - compute the estimated treatment effect and standard error, and explain why this is not a completly appropriate analysis given the randomization used.
+
+lm <- lm(fat ~ level, data = cows)
+display(lm)
+```
+
+#Exercise 6 (b), Chapter 18
+```{r}
+cows$i.weight <- cows$initial.weight/100
+lm2 <- lm(fat ~ level + i.weight + age + lactation, data = cows)
+#3 variables were recorded before treatment assignment: lactation number (seasons of lactation), age, and initial weight of cow
+#In comparison to the regression above, the estimated treatment effect falls very slightly and the predictive power as indicated by the r-squared increases with the inclusion of the variables above
+display(lm2)
+```
+
+#Exercise 6 (c), Chapter 18
+```{r}
+#convert levels to categorical
+lm3 <- lm(fat ~ as.factor(level) + i.weight + age + lactation, data = cows)
+display(lm3)
+
+```
+```{r}
+plot <- data.frame(mean = c(0.12, 0.27, 0.58, 0.19, 0.19*2, 0.19*3), 
+                        se = c(0.17, 0.18, 0.18, 0.06, 0.06, 0.06), 
+                        trtmnt = c("1", "2", "3", "1", "2", "3"), 
+                        model = c("lm3", "lm3", "lm3", "lm2", "lm2", "lm2"))
+
+ggplot(plot, aes(x = trtmnt, col = model)) +
+  geom_errorbar(aes(ymax = mean + se, ymin = mean - se), 
+                position = "dodge") + xlab("treatment (levels)") + 
+  ylab("~ effect (+/- se)") 
+
+```
+
+##Exercise 7, Chapter 18
+
+(a)What are an individual's options, value function, and parameters?
+
+* individual's option: take riskier or safer job option
+
+* value function:
+$$ Pr(c(i) > a(i) + b(i)*x(i)) $$
+
+* the parameters: w(i) intends to measure the compensation associated with switching over to a relatively dangerous job, a(i) intends to measure the inconveniences associated with switching to a new job (time, administrative hurdles, etc.), b(i) intends to measure the cost of prospective dangers of the new job, and x(i) intends to measure the probability of death on the new job
+
+(b)Discuss the assumptions involved in assigning a causual interpretation to these regression models.
+
+* Based on the suggested model above - we are holding all other characterstics of the job constant when measuring the impact of danger exclusively which seems like an unreasonable assumption to make. There are other important factors to consider that might influence an invidivual's tolerance for risk-taking, such as whether the indivual has a family or more generally the individual's age. 

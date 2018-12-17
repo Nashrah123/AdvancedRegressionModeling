@@ -1,0 +1,27 @@
+---
+title: "AdvRegMod19"
+author: "Nashrah Ahmed"
+date: "April 3, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+##Exercise 6 (a), Chapter 18
+```{r}
+cows <- read.table("http://www.stat.columbia.edu/~gelman/arm/examples/cows/cow.dat", skip=4, header=TRUE)
+
+#3 variables were recorded before treatment assignment: lactation number (seasons of lactation), age, and initial weight of cow
+
+#consider the simple regression of mean daily milk fat on the level of additive - compute the estimated treatment effect and standard error, and explain why this is not a completly appropriate analysis given the randomization used.
+
+lm <- lm(fat ~ level, data = cows)
+summary(lm)
+```
+
+Based on the reading, the treatment sign can be ignored because it is based on solely the fully observed covariates and not on those that were not considered, though relevant to the impact of the treatment, ie. the physical appearances of the cows and the times at which the cows entered the study) - because post-treatment covariates are considered bad practice we would avoid accounting for those variables after the experiment is conducted. Since the cows were initially assigned to treatments completely at random, and the selection process was contingent on which cows produced the best balance across three 3 covariates mentioned above - there is no sample size of no treatment cows to precisely compare the imapact of the treatment with which makes the above regression a potentially oversimplified method for assessing the treatment effect.
+
+Shadow project: This was helpful for thinking about the various ways in which one can randomize the subjects of a potential experiment and the associated pros and cons of the methods.
