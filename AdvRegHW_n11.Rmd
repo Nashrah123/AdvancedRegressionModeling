@@ -1,0 +1,65 @@
+---
+title: "AdvRegMod_n11"
+author: "Nashrah Ahmed"
+date: "February 25, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rstan)
+library(arm)
+library(rstanarm)
+library(dplyr)
+
+```
+
+##Exercise 2, Chapter 9 (a)
+```{r}
+var1 <- rnorm(1000, 0, 1)
+var2 <- rnorm(1000, 0, 1)
+fake <- data.frame(var1, var2)
+
+lm1 <- lm(var2 ~ var1, data = fake)
+summary(lm1)
+display(lm1)
+
+#the slope coefficient does not appear statistically significant
+
+```
+
+##(b)
+```{r}
+z_scores <- c(rep(0, 100))
+for (k in 1:100) {
+  var1 <- rnorm(1000, 0, 1)
+  var2 <- rnorm(1000, 0, 1)
+  fake <- data.frame(var1, var2)
+  fit <- lm(var2 ~ var1, data = fake)
+  z_scores[k] <- coef(fit)[2]/se.coef(fit)[2]
+}
+
+```
+
+##(c)
+```{r}
+# initialize the vector with missing values (NAs)
+# or start with vector z_scores <- numeric(length=100), which would set up a vector of zeroes
+z_scores <- c(rep(NA, 100))
+for (k in 1:100) {
+  var1 <- rnorm(1000, 0, 1)
+  var2 <- rnorm(1000, 0, 1)
+  fake <- data.frame(var1, var2)
+  fit <- lm(var2 ~ var1, data = fake)
+  z_scores[k] <- coef(fit)[2]/se.coef(fit)[2]
+}
+
+stat_signif1 <- abs(z_scores)
+stat_signif <- sum(stat_signif1 > 2)
+stat_signif
+
+```
+
+Shadow project: This was a helpful exercise in evaluating the regression output for two statistically independent variables that have no apparent relationship. It was interesting to measure the level of statisticaly significance based on the z score, a method used to normalize the results in this case. 

@@ -1,0 +1,45 @@
+---
+title: "AdvRegHW6_n"
+author: "Nashrah Ahmed"
+date: "February 6, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+##Chapter 7, exercise 1 (a)
+```{r}
+library("arm")
+
+a <- 5
+b <- 7
+sigma <- 3
+x <- runif(100, 0, 50)
+n <- length(x)
+
+y <- a + b*x + rnorm(n, 0, sigma)
+fake <- data.frame(x,y)
+
+head(fake)
+```
+```{r}
+fit <- lm(y ~ x, data=fake)
+display(fit)
+```
+
+##Chapter 7, exercise 1 (b & c)
+```{r}
+
+lm(formula = y ~ x, data=fake)
+
+plot(x, y, xlab = "x", ylab = "y",  main = "Fake Data and Fitted Regression Line")
+a_hat <- coef(fit)[1]
+b_hat <- coef(fit)[2]
+abline(a_hat, b_hat)
+x_bar <- mean(fake$x)
+text(x_bar, a_hat + b_hat*x_bar,
+  paste("y =", round(a_hat, 2), "+", round(b_hat, 2), "* x"), adj=0)
+
+```
+
+Shadow project: This exercise was useful in that it helps one think about visualizations and classic ways to experiment with data.  

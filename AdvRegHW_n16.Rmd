@@ -1,0 +1,110 @@
+---
+title: "AdvRegMod16"
+author: "Nashrah Ahmed"
+date: "March 25, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("arm")
+library("rstanarm")
+if (!require("car")) install.packages("car")
+if (!require("boot")) install.packages("boot")
+library("car")
+library("boot")
+
+```
+
+##Exercise 3, Chapter 12
+```{r}
+#meaure of how well combined earnings of the parent's in a child's family predicts high school graduation: prob a child graduates from high school is 27% for children whose parents earn no income and is 88% for children whose parents earn $60k
+
+#logistic model
+#pr_grad <- inv.logit(a + b*x)
+#0.27 <- inv.logit(a + b*0)
+#.88 <- inv.logit(a + b*6)
+
+a <- round(logit(0.27), 1)
+a
+# plug back into equation for .88
+b = logit(.88)
+b
+
+```
+
+##Exercise 5, Chapter 12 (a)
+```{r}
+
+#fake data
+x <- rnorm(50, 60, 15)
+y <- rlogis(50, -24 + 0.4*x)
+
+fake <- data.frame(x,y)
+
+#graph ftted model
+jitter_binary <- function(a, jitt=0.5){
+  ifelse(a==0, runif(length(a),0, jitt), runif(length(a), 1-jitt, 1))
+}
+
+fake$y_jitter <- jitter_binary(fake$y)
+plot(fake$x, fake$y_jitter)
+curve(invlogit(-24 + 0.4*x), add=TRUE)
+
+```
+
+##Exercise 5, Chapter 12 (b & c)
+```{r}
+
+#solve for z
+x <- rnorm(50, 60, 15)
+y <- inv.logit(-24 + 0.4*x)
+z <- (x-60)/15
+y2 <- inv.logit(-24 + 0.4*z)
+round(y2, 1)
+
+#add noise
+x <- rnorm(50, 60, 15)
+e <- rnorm(50, 0, 1)
+y1 <- inv.logit(-24 + 0.4*x + e)
+z <- (x-60)/15
+y1 <- inv.logit(-24 + 0.4*z + e)
+round(y1, 1)
+
+```
+
+##Exercise 6, Chapter 12
+```{r}
+#latent-data formulation (12.3)
+
+#Pr(y=1) = logit^-1(1+2x1+3x2)
+x1 <- 1
+x2 <- 0.5
+
+center <- 1 + 2*x1 + 3*x2
+
+```
+##Exercise 6, Chapter 12 
+
+![sketch.](/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling/image/hw2.png)
+
+##Exercise 7, Chapter 12
+```{r}
+#fake data
+x3 <- seq(1, 20, by=1)
+y3 <- sample(rep(0:1,each=10))
+
+fake3 <- data.frame(x3, y3)
+test <- glm(y3 ~ x3, family = binomial(link = "logit"), data = fake3)
+
+#graph ftted model
+fake3$y3_jitter <- jitter_binary(fake3$y3)
+plot(fake3$x3, fake3$y3_jitter)
+curve(invlogit(coef(test)[1] + coef(test)[2]*x), add=TRUE)
+
+plot(fake3$x3, fake3$y3)
+curve(invlogit(coef(test)[1] + coef(test)[2]*x), add=TRUE)
+
+```
+
+Shadow Project: These exercises were very helpful for understanding how best to interpret logistic regression, interactions, and latent variablaes. It was also interesting to think about which types of data are best suited for logisiic regression.

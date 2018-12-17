@@ -1,0 +1,115 @@
+---
+title: "AdvRegMod_HW3"
+author: "Nashrah Ahmed"
+date: "January 27, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Chapter 3, exercise 2
+```{r}
+
+# sample
+X <- rnorm(100, mean =35, sd =10)
+hist(X, breaks = 20)
+
+sd(X*1.5)
+z <- mean(X*1.5)
+
+z2 <- 100-z
+
+sd(X*1.5 + z2)
+mean(X*1.5 + z2)
+
+## 2a) y = 45.25 + 1.5*x
+
+## 2b) range = 45.25 to 120.25
+
+## 2c)
+curve(x*1.5, from=45.25, to=120.25, , xlab="x", ylab="y")
+
+```
+## 2d) Perhaps there is a way to reverse the order in which the points are retrieved but I am not sure why that order would be unfavorable. Or X can be multiplied by a negative to get the same value, however this will alter the slope or direction of the line.
+
+## Chapter 4, exercise 4
+```{r}
+
+## 4a) 
+
+a <- log(1.42)
+a
+
+## 4b)
+
+se_a <- (1.98/1.42)/1.96
+se_a2 <- se_a/1.42
+se_a2
+
+```
+
+## Chapter 5, exercise 1a
+```{r}
+
+p_shots <- function(prob) {
+  n_shots <- 3
+  x_shot <- rbinom(2,1,prob)
+  repeat {
+    if(x_shot[n_shots-2] == 0 & x_shot[n_shots-1] == 0){
+      print(paste("shots", n_shots - 2, "and", n_shots - 1, "missed"))
+      break()
+    }
+    else{
+      x_shot <- append(x_shot, rbinom(1,1,prob))
+    }
+  n_shots <- n_shots + 1
+  }
+return(x_shot)
+}
+
+```
+
+## Sampling Function
+```{r}
+
+r_sample <- function(N, p, sampmethod = c("I", "C", "P")){
+final <- c(rep(0, N))
+  if(sampmethod == "I"){
+    print(paste("I Sample" ,N, "observations with p = ",p))
+    for(i in 1:N){
+      x <- runif(1, min = 0, max = 1)
+      final[i] <- x < p
+    }
+  }
+  else if(sampmethod == "C"){
+    print(paste("C Sample" ,N, "observations with p = ",p))
+    x <- runif(N, min = 0, max = 1)
+    sort(x)
+    y <- floor(N*p)
+    cut_point <- x[y]
+    for(i in 1:N){
+      final[i] <- i < cut_point
+    }
+  }
+  else {
+        print(paste("P Sample" ,N, "observations with p = ",p))
+    is.even <- function(x) x %% 2 == 0
+    if(is.even(N) == 0){
+      stop("odd number of subjects")
+    }
+    else if(p != 0.5){
+      stop("p is not 0.5")
+    }
+    else{
+      x <- seq(2, N, 2)
+      for(i in x){
+        y <- runif(1, min = 0, max = 1)
+        final[i] <- y < p
+        final[i-1] <- abs(final[i] - 1)
+      }
+    }
+  }
+return(final)
+}
+
+```

@@ -1,0 +1,153 @@
+---
+title: "AdvRegHW_9"
+author: "Nashrah Ahmed"
+date: "February 18, 2018"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!require("rstanarm"))
+{
+  install.packages("rstanarm")
+}
+
+library("rstanarm")
+library("arm")
+
+```
+
+##Exercise 5, Chapter 8
+(a) Consider the economy and voting example from Section 7.2. Fit the linear regression model to the data through 2012 which are available at ElectionsEconomy. Make a forcast for the incumbent party's share of the two-party vote in a future election where economic growth is 2%.(a) Compute the point forcast, the standard deviation of the linear predictor from 8.3, and the standard deviation of the predicted value from 8.4.
+```{r}
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+
+hibbs <- read.table("hibbs.dat", header = TRUE)
+
+P_Forcast <- stan_glm(inc.party.vote ~ growth, data=hibbs)
+print(P_Forcast)
+
+#linear predictor = a + bx
+#predicted value = a + bx + error
+#median-based estimates and standard errors: when using simulation draws, our point estimate of any parameter will be its median, and standard error will be median-based calc * 1.483
+```
+
+```{r}
+sims <- as.matrix(P_Forcast)
+n_sims <- nrow(sims)
+a <- sims[,1]
+b <- sims[,2]
+sigma <- sims[,3]
+
+p_estimate <- median(a)
+p_estimate
+std_error <- 1.483*median(abs(a-median(a)))
+std_error
+```
+
+```{r}
+new_hibbs <- data.frame(growth=2.0)
+
+y_pred1 <- posterior_predict(P_Forcast, newdata=new_hibbs)
+median1 <- median(y_pred1)
+median1
+std_error1 <- mad(y_pred1)
+std_error1
+hist(y_pred1)
+```
+
+##Now compute these using the relevant prediction functions discussed in Section 8.4. Check that you get the same values as in part (a) of this problem.
+```{r}
+x <- rnorm(n_sims, 2.0)
+y_hat <- a + b*x
+y_pred <- rnorm(n_sims, y_hat, sigma)
+Median <- median(y_pred)
+P_SD2 <- mad(y_pred)
+win_prob <- mean(y_pred > 50)
+cat("Predicted Incumbent's Party's Share of 2-Party Vote: ", fround(Median,1), ", with s.e. ", fround(P_SD2, 1), "\nPr (hibbs) = ", fround(win_prob, 2), sep="")
+
+hist(y_pred)
+
+#Higher standard deviation for second method
+```
+
+##Exercise 6, Chapter 8
+Uniform, weakly informative, and informative priors: Follow the steps of Section 8.5 for a different example, a regression of earnings on height using the data from the folder Earnings. You will need to think what could be an informative prior distribution in this setting.
+```{r}
+Earnings <- read.csv("Earnings.csv", header = TRUE)
+#eliminate 0s for earn
+Earnings2 <- data.frame(Earnings)
+Earnings3 <- Earnings2[apply(Earnings2!=0, 1, all),]
+#height in inches
+avg <- round(mean(Earnings3$height), 2)
+Earnings3$n_height <- Earnings3$height - avg
+P_Forcast_n <- stan_glm(earn ~ n_height, data=Earnings3)
+print(P_Forcast_n)
+```
+
+```{r}
+sims_n <- as.matrix(P_Forcast_n)
+n_sims2 <- nrow(sims_n)
+a_n <- sims_n[,1]
+b_n <- sims_n[,2]
+sigma_n <- sims_n[,3]
+
+p_estimate_n <- median(a_n)
+p_estimate_n
+std_error_n <- 1.483*median(abs(a_n-median(a_n)))
+std_error_n
+```
+
+```{r}
+#Used average height of man and woman in 2017: 66.75
+n_avg <- avg - 66.75
+new_Earnings <- data.frame(n_height=n_avg)
+
+y_pred3 <- posterior_predict(P_Forcast_n, newdata=new_Earnings)
+median3 <- median(y_pred3)
+std_error3 <- mad(y_pred3)
+hist(y_pred3)
+```
+
+##Now compute these using the relevant prediction functions discussed in Section 8.4. Check that you get the same values as in part (a) of this problem.
+```{r}
+x1 <- rnorm(n_sims2, n_avg)
+y_hat3 <- a + b*x1
+y_pred4 <- rnorm(n_sims2, y_hat3, sigma_n)
+Median4 <- median(y_pred4)
+P_SD3 <- mad(y_pred4)
+cat("Predicted Earnings: ", fround(Median4,1), ", with s.e. ", fround(P_SD3, 1), "\nPr (Earnings3) = ", sep="")
+
+hist(y_pred4)
+
+#lower standard deviation for second method
+```
+
+##Exercise 7, Chapter 8
+Decision analysis: An experiment is performed to measure the efficacy of a television advertising program. The result in an estimate that each minute spent on a national advertising program will increase sales by $500,000 and this estimate has a standard error of $200,000. Assume the uncertainty in the treatment effect can be approximated by a normal distribution. Suppose ads cost $300,000 per minute. What is the expected net gain for purchasing 20 mins of ads? What is the probability that the net gain is negative?
+```{r}
+cost <- 300000*20
+cost
+
+a <- 0
+b <- 500000
+sigma <- 200000
+x <- 20
+
+y_hat_d <- a + b*x + rnorm(1, 0, sigma)
+y_hat_d
+
+est_net_gain <- y_hat_d - cost
+est_net_gain
+
+# I am not sure this is how you wanted us to answer this question
+y_pred_d <- rnorm(n_sims, y_hat_d)
+
+median_d <- median(y_pred_d)
+mad_sd_d <- mad(y_pred_d)
+netgain_prob <- mean(y_pred_d < 0)
+cat("Pred Efficacy of Television Adv Program: ", fround(median_d,1), ", with s.e. ", fround(mad_sd_d, 1), "\nPr (net loss) = ", fround(netgain_prob, 2), sep="")
+```
+
+Shadow project: These exercises were helpful in comparing techniques for measuring uncertainty in the regression coefficients. Particularly the nuances between the linear predictor and the predicted value estimated by Bayesian methods.  

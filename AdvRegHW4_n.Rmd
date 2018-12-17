@@ -1,0 +1,73 @@
+---
+title: "AdvRegHW4_n"
+author: "Nashrah Ahmed"
+date: "January 31, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Chapter 5, exercise 1b & c
+```{r}
+
+p_shots <- function(prob) {
+  n_shots <- 2
+  x_shot <- rbinom(2,1,prob)
+  repeat {
+    if(x_shot[n_shots-1] == 0 & x_shot[n_shots] == 0){
+      break()
+    }
+    else{
+      x_shot <- append(x_shot, rbinom(1,1,prob))
+    }
+  n_shots <- n_shots + 1
+  }
+wins <- sum(x_shot)/length(x_shot)
+return(cbind(c(n_shots),c(wins)))
+  
+}
+
+# similuation x1000
+sim_shots <- c(rep(0, 1000))
+for (i in 1:1000) {
+ sim_shots[i] <- p_shots(0.6)[1]
+}
+
+# summary statistics
+mean(sim_shots)
+sd(sim_shots)
+## not quite sure how to get distribution
+```
+
+```{r}
+# scatter plot
+  ## alter 1st simulation
+sim_shots2 <- cbind(c(rep(0,1000)), c(rep(0,1000)))
+for (i in 1:1000) {
+ sim_shots2[i,] <- p_shots(0.6)
+}
+
+plot(sim_shots2[,1], sim_shots2[,2], xlab = "# of Shots", ylab = "Prop of Wins")
+```
+
+## Chapter 5, exercise 2
+```{r}
+#continuous probability simulation
+
+n_sims <- 1000
+total_weight <- c(rep(0,n_sims))
+
+for (i in 1:n_sims){
+  N <- 10
+  n_men <- sum(rbinom(N, 1, 0.48))
+  w_men <- sum(exp(rnorm(n_men, 5.13, 0.17)))
+  w_women <- sum(exp(rnorm(10 - n_men, 4.96, 0.20)))
+  total_weight[i] <- w_men + w_women
+}
+
+ow_prob <- sum(total_weight > 1750) / length(total_weight)
+ow_prob
+
+```
+
+Shadow project update: For my shadow project, the types of simulations conducted above would be beneficial in determining the optimal level of trials or number of attempts to get the most favorable outcome. In addition, it would help set thresholds for my model based on specific characteristics of the features.

@@ -1,0 +1,69 @@
+---
+title: "AdvRegMod"
+author: "Nashrah Ahmed"
+date: "March 20, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("arm")
+library("rstanarm")
+
+```
+
+##Exercise , Chapter 12 
+```{r}
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+df <- read.delim2("NES.txt", header = TRUE, sep = " ", dec = ".")
+write.table(df, file="NES.dat", row.names=TRUE)
+NES <- read.table("NES.dat", header = TRUE)
+
+NES_sub <- NES$year==1992 & !is.na(NES$rvote) & !is.na(NES$dvote) & (NES$rvote==1 | NES$dvote==1)
+NES92 <- NES[NES_sub,]
+
+# logistic regression of vote preference on income
+
+fit_1 <- glm(rvote ~ income, family=binomial(link="logit"), data=NES92)
+display(fit_1)
+stan_fit_1 <- stan_glm(rvote ~ income, family=binomial(link="logit"), data=NES92)
+print(stan_fit_1)
+
+fit_2 <- glm(rvote ~ income + educ2 + str_partyid, family=binomial(link="logit"), data=NES92)
+display(fit_2)
+stan_fit_2 <- stan_glm(rvote ~ income + educ2 + str_partyid, family=binomial(link="logit"), data=NES92)
+print(stan_fit_2)
+
+fit_3 <- glm(rvote ~ income + educ2 + black + female + str_partyid, family=binomial(link="logit"), data=NES92)
+display(fit_3)
+stan_fit_3 <- stan_glm(rvote ~ income + educ2 + black + female + str_partyid, family=binomial(link="logit"), data=NES92)
+print(stan_fit_3)
+
+fit_4 <- glm(rvote ~ income + educ2 + black + female + ideo + str_partyid, family=binomial(link="logit"), data=NES92)
+display(fit_4)
+stan_fit_4 <- stan_glm(rvote ~ income + educ2 + black + female + ideo + str_partyid, family=binomial(link="logit"), data=NES92)
+print(stan_fit_4)
+
+```
+```{r}
+#selected model:
+fit_4 <- glm(rvote ~ income + educ2 + income:educ2 + black + female, family=binomial(link="logit"), data=NES92)
+display(fit_4)
+stan_fit_4 <- stan_glm(rvote ~ income + educ2 + income:educ2 + black + female, family=binomial(link="logit"), data=NES92)
+print(stan_fit_4)
+
+#the textbook recommends using the following tricks to best interpret the results:
+#1)evaluate predictions from the mean of variables and to divide by 4 to get approximate predictive differences on the prob scale
+#intercept: logit^-1(-1.15+.24*3.1+0.07*4.3-2.67*0.133-0.09*0.533+0*3.1*4.3) = ~ -0.5
+#income: 3.1
+#education: 4.3
+#black: 0.133
+#female: 0.553
+
+#having a little bit of a hard time understanding how to implement these steps for the above regression 
+
+```
+
+##Exercise 2, Chapter 12 
+
+![test.](/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling/image/hw.png)

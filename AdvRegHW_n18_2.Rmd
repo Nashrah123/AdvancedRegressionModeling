@@ -1,0 +1,17 @@
+---
+title: "AdvRegMod_2"
+author: "Nashrah Ahmed"
+date: "April 3, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Exercise 3, Chapter 18
+Transformation of response variable = subtract pre-test score from outcome score which generates a "gain score" = g(i) = alpha + T(zi) + error(i).
+As indicated in the chapter, the gain scores essentially assume that Beta = 1 in the model. If one were to include the pre-test score as a predictor -> g(i) = alpha + TZ(i) + yx(i) + error(i) - then the estimate for the the coefficient for z is equivalent to the estimated coefficient from the original model, y(i) = alpha + TZ(i) + betax(i) + error(i).``
+
+Exercise 4 & 5, Chapter 18
+![sketch.](/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling/image/hw3.png)

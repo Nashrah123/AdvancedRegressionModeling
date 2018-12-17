@@ -1,0 +1,86 @@
+---
+title: "AdvRegHW_n12"
+author: "Nashrah Ahmed"
+date: "February 27, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rstan)
+library(arm)
+library(rstanarm)
+```
+
+```{r}
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+df <- read.csv("ProfEvaltnsBeautyPublic.csv", header = TRUE)
+
+lm1 <- lm(courseevaluation ~ btystdave + tenured + minority + profevaluation, data = df)
+display(lm1)
+
+coefs <- coef(lm1)
+coefs
+
+y_hat <- fitted(lm1)
+u <- resid(lm1)
+sigma <- sigma.hat(lm1)
+
+residual.plot(y_hat, u, sigma)
+
+```
+
+## courseevaluation = .02 + .01*btystdave + 0.01*tenured + -0.01*minority + 0.95*provevaluation + .20
+
+## this regression has 4 variables based on student evaluations for predicting the course evaluation: a professor's beauty rating, whether the professor is a minority, whether the professor is tenured, and the professor's evaluation
+
+## variables predict ~87 percent of variation in underlying data
+
+## based on the results from the multivariate OLS regression above: for every one point higher in beauty ranking, the course evaluation is predicted to increase by 0.01 points, if the professor is tenured the course evaluation is predicted to increase by 0.01 points, if the professor is a minority the course evaluation is predicted to decrease by 0.01 points, and for every point higher in a professor's evaluation the course evaluation is predicted to increase by .95 points
+
+```{r}
+
+lm2 <- lm(courseevaluation ~ btystdave + onecredit + tenured + profevaluation, data = df)
+display(lm2)
+
+```
+
+## courseevaluation = .06 + .02*btystdave + 0.14*onecredit + 0.03*tenured + 0.94*provevaluation + .19
+
+## this regression has 4 variables based on student evaluations for predicting the course evaluation: a professor's beauty rating, whether the class is one credit, whether the professor is tenured, and the professor's evaluation
+
+## variables predict ~88 percent of variation in underlying data
+
+## based on the results from the multivariate OLS regression above: for every one point higher in beauty ranking, the course evaluation is predicted to increase by 0.02 points, if the course is one credit the course evaluation is predicted to increase by 0.14 points, if the professor is tenured the course evaluation is predicted to increase by 0.03 points, and for every point higher in a professor's evaluation the course evaluation is predicted to increase by .96 points
+
+```{r}
+#interaction between profevaluation and blkandwhite
+#unsure what the dummy variable is exactly measuring but am assuming race black = 1
+lm3 <- lm(courseevaluation ~ btystdave + minority + tenured + profevaluation*blkandwhite, data = df)
+display(lm3)
+
+```
+
+## courseevaluation = -0.01 + .01*btystdave + 0.0*minority + 0.01*tenured + 0.96*provevaluation + 0.34*blkandwhite + -.07*profevaluation:blkandwhite + .20
+
+## this regression has 6 variables based on student evaluations for predicting the course evaluation: a professor's beauty rating, whether the professor a minority, whether the professor is tenured, the professor's evaluation, whether the professor's race is black or white (unsure), and the interaction between a professor's evaluation and gender
+
+## variables predict ~88 percent of variation in underlying data
+
+## based on the results from the multivariate OLS regression above: for every one point higher in beauty ranking, the course evaluation is predicted to increase by 0.01 points, if the professor is a minority the course evaluation is predicted to increase by 0.00 points, if the professor is tenured the course evaluation is predicted to increase by 0.01 points, for every point higher in a professor's evaluation the course evaluation is predicted to increase by .96 points, if the professor's race is black the course evaluation is predicted to increase by 0.34 points, and for every point higher in a professor's evaluation who is black the course evaluation is predicted to decrease by 0,07 points
+
+```{r}
+#interaction between beauty and gender
+#female = 1
+lm4 <- lm(courseevaluation ~ btystdave*female + minority + tenured + profevaluation, data = df)
+display(lm4)
+
+```
+
+## courseevaluation = 0.06 + 0.0*btystdave + -0.03*female + -0.01*minority + 0.0*tenured + 0.95*provevaluation + 0.03*btystdave*female + .20
+
+## this regression has 6 variables based on student evaluations for predicting the course evaluation: a professor's beauty rating, whether the professor a minority, whether the professor is female, minority and tenured (all dummy variables), the professor's evaluation, and the interaction between a professor's beauty ranking and gender
+
+## variables predict ~88 percent of variation in underlying data
+
+## based on the results from the multivariate OLS regression above: for every one point higher in beauty ranking, the course evaluation is predicted to increase by 0.00 points, if the professor is a female the course evaluation is predicted to decrease by 0.03 points, if the professor is a minority the course evaluation is predicted to decrease by 0.01 points, if the professor is tenured the course evaluation is predicted to increase by 0.00 points, for every point higher in a professor's evaluation the course evaluation is predicted to increase by .95 points, and for every point higher in beauty ranking for a female professor the course evaluation is predicted to increase by 0.03 points

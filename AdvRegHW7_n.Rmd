@@ -1,0 +1,97 @@
+---
+title: "AdvRegHW7_n"
+author: "Nashrah Ahmed"
+date: "February 12, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+##Exercise 2, Chapter 7 
+```{r}
+library("arm")
+library(RColorBrewer)
+
+a <- 6
+b <- 2
+c <- 8
+sigma <- 3
+x <- runif(100, 0, 50)
+n <- length(x)
+
+y <- a + b*x + c*(x^2) + rnorm(n, 0, sigma)
+fake <- data.frame(x,y)
+
+head(fake)
+```
+```{r}
+fit <- lm(y ~ x, data=fake)
+display(fit)
+
+#"Best-fit" in this case shows the model was able to predict about 95% of the variation in the underlying data
+```
+
+```{r}
+lm(formula = y ~ x, data=fake)
+
+plot(x, y, xlab = "x", ylab = "y",  main = "Fake Data and Fitted Regression Line")
+a_hat <- coef(fit)[1]
+b_hat <- coef(fit)[2]
+abline(a_hat, b_hat)
+x_bar <- mean(fake$x)
+text(x_bar, a_hat + b_hat*x_bar,
+  paste("y =", round(a_hat, 2), "+", round(b_hat, 2), "* x"), adj=0)
+
+```
+
+##Exercise 4, Chapter 7 #ElectionsEconomy
+```{r}
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+df <- read.delim2("hibbs.dat.txt", header = TRUE, sep = " ", dec = ".")
+write.table(df, file="hibbs.dat", row.names=TRUE)
+hibbs <- read.table("hibbs.dat", header = TRUE)
+hibbs
+
+plot(hibbs$growth, hibbs$inc_party_vote,  xlab = "Economic growth",
+     ylab="Incubent party's vote share")
+M1 <- lm(inc.party.vote ~ growth, data=hibbs)
+display(M1)
+
+rss <- function(x, y, a, b){
+  resid <- y - (a + b*x)
+  return(sum(resid^2))
+}
+
+rss1 <- rss(hibbs$growth, hibbs$inc.party.vote, 45, 2.5)
+rss2 <- rss(hibbs$growth, hibbs$inc.party.vote, 48, 3.5)
+rss3 <- rss(hibbs$growth, hibbs$inc.party.vote, 42, 2.8)
+rss4 <- rss(hibbs$growth, hibbs$inc.party.vote, 47, 2.9)
+rss5 <- rss(hibbs$growth, hibbs$inc.party.vote, 40, 2.4)
+rss_t <- rss(hibbs$growth, hibbs$inc.party.vote, 46.2, 3.1)
+
+rss_f <- as.data.frame(rbind(rss1, rss2, rss3, rss4, rss5, rss_t))
+rss_f
+
+cols<-brewer.pal(n=6,name="Set1")
+
+cols_t1<-cols[rss_f$V1]
+plot(rss_f$V1, col=cols,pch=19)
+
+#Yellow dot represents rss for fitted values derived in 7.2 and is the lowest
+
+```
+
+##Exercise 7, Chapter 7 
+```{r}
+hibbs$binary=ifelse(hibbs$growth>=2,1,0)
+M1 <- lm(inc.party.vote ~ growth, data=hibbs)
+display(M1)
+M2 = lm(inc.party.vote ~ binary, hibbs)
+display(M2)
+```
+```{r}
+se <- sqrt(se.coef(M2)^2 + se.coef(M2)^2)
+se
+```
+
+Shadow Project: The examples were quite interesting to work through and it was helpful to see how two groups within a set of data could have marginally better or worse predictive power. This is particularly a useful experimental technique for when evaluating a control group from the one that has undergone a change.

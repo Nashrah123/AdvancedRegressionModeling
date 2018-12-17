@@ -1,0 +1,77 @@
+---
+title: "AdvRegHW5_n"
+author: "Nashrah Ahmed"
+date: "February 5, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Exercise 2, Chapter 6
+```{r}
+# batting averages for New York Yankees for 2016 and 2017
+
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+stats = read.csv("stats.csv")
+
+lm1 <- lm(X2017 ~ X2016, data=stats)
+summary(lm1)
+with(stats,plot(X2016,X2017, xlab="2016 Batting Averages", ylab="2017 Batting Averages"))
+abline(lm1)
+```
+
+##Fake data
+```{r}
+# fake data
+stats2 = read.csv("stats2.csv")
+
+lm2 <- lm(X2017 ~ X2016, data=stats2)
+summary(lm2)
+with(stats2,plot(X2016,X2017, xlab="2016 Batting Averages", ylab="2017 Batting Averages"))
+abline(lm2)
+```
+
+##Exercise 3, Chapter 6
+```{r}
+# Attempt below:
+
+set.seed(01217893)
+
+#1st maneuver
+N <- 500
+data <- rnorm(N, 5, 1)
+noise1 <- rnorm(N, 0, 1)
+F_man1 <- data + noise1
+F_flight <- data.frame(F_man1)
+
+for (i in F_flight) {
+  weight_cost = -90 
+  if(i<"3"){
+  cost <- return(mean(weight_cost*i))
+  } else {
+  NULL
+}
+}
+
+#2nd maneuver
+
+for (i in F_flight) {
+  weight_praise = 10 
+  if(i>"7"){
+  praise <- return(mean(weight_praise*i))
+  } else {
+  NULL
+}
+}
+
+#df <- cbind(cost,praise)
+
+#plot
+#lm3 <- lm(cost ~ praise, data=df)
+#summary(lm3)
+#with(df,plot(praise,cost))
+#abline(lm3)
+
+```
+
+Shadow project: Although I could not figure out the appropriate code for assigning a penality and praise function above (a reccomendation for how to improve the above would be helpful), this machine learning technique could be very beneficial for classification of a relatively large and complex data set.  

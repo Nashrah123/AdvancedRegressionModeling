@@ -1,0 +1,107 @@
+---
+title: "AdvRegHW_n13"
+author: "Nashrah Ahmed"
+date: "February 27, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rstan)
+library(arm)
+library(rstanarm)
+```
+
+##Exercise 5, Chapter 9
+```{r}
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+df <- read.csv("ProfEvaltnsBeautyPublic.csv", header = TRUE)
+
+lm2 <- lm(courseevaluation ~ btystdave + onecredit + tenured + profevaluation, data = df)
+display(lm2)
+coefs <- coef(lm2)[2]
+coefs
+
+lm3 <- stan_glm(courseevaluation ~ btystdave + onecredit + tenured + profevaluation, data = df, iter = 1000)
+summary(lm3)
+
+lm4 <- stan_glm(courseevaluation ~ btystdave + onecredit + tenured + profevaluation, data = df, iter = 100)
+summary(lm4)
+
+# Gives the closest prediction to display()
+lm5 <- stan_glm(courseevaluation ~ btystdave + onecredit + tenured + profevaluation, data = df, iter = 10)
+summary(lm5)
+
+```
+
+##Exercise 1, Chapter 10
+```{r}
+
+x_1 <- 1:100
+x_2 <- rbinom(100, c(0,1), prob = 1)
+error <- rt(100, 0, df = 4)
+lm_fake <- data.frame(x_1, x_2, error)
+
+lm_fake$y <- 3 + .1*x_1 + .5*x_2 + error
+
+##
+
+lm <- lm(y ~ x_1 + x_2, data = lm_fake)
+lm1 <- summary(lm)
+lm1
+
+lm1$sigma[1]
+coef(lm1)[,2][2]
+
+error1 <- qnorm(0.68)*coef(lm1)[,2][1]/sqrt(100)
+left <- coef(lm1)[,1][1]-error1
+left
+right <- coef(lm1)[,1][1]+error1
+right
+
+error2 <- qnorm(0.68)*coef(lm1)[,2][2]/sqrt(100)
+left <- coef(lm1)[,1][2]-error2
+left
+right <- coef(lm1)[,1][2]+error2
+right
+
+error3 <- qnorm(0.68)*coef(lm1)[,2][3]/sqrt(100)
+left <- coef(lm1)[,1][3]-error2
+left
+right <- coef(lm1)[,1][3]+error2
+right
+
+
+left <- c(rep(NA, 1000))
+right <- c(rep(NA, 1000))
+left1 <- c(rep(NA, 1000))
+right1 <- c(rep(NA, 1000))
+left2 <- c(rep(NA, 1000))
+right2 <- c(rep(NA, 1000))
+
+#imperfect loop: producing same values for each iteration
+
+for (i in 1:1000) {
+  x_1 <- 1:100
+  x_2 <- rbinom(100, c(0,1), prob = 1)
+  error <- rt(100, 0, df = 4)
+  lm_fake <- data.frame(x_1, x_2, error)
+  lm_fake$y <- 3 + .1*x_1 + .5*x_2 + error
+  lm <- lm(y ~ x_1 + x_2 + rnorm(100, 0, 1), data = lm_fake)
+  error1 <- qnorm(0.68)*coef(lm1)[,2][1]/sqrt(100)
+  left[i] <- coef(lm1)[,1][1]-error1
+  right[i] <- coef(lm1)[,1][1]+error1
+  error2 <- qnorm(0.68)*coef(lm1)[,2][2]/sqrt(100)
+  left1[i] <- coef(lm1)[,1][2]-error2
+  right1[i] <- coef(lm1)[,1][2]+error2
+  error3 <- qnorm(0.68)*coef(lm1)[,2][3]/sqrt(100)
+  left2[i] <- coef(lm1)[,1][3]-error3
+  right2[i] <- coef(lm1)[,1][3]+error3
+}
+
+test <- right
+```
+
+Shadow Project: My results above do not seem fully accurate and your feedback would be helpful. The intent of this exercise was to fit a wrong model to a dataset, specifically to fit a standard model to data with a nonnormal distribution. This is a very insightful exercise as it forces one to think harder about application of standard models to all datasets without knowledge of the potential downsides of doing so. Particularly the tendacy to misinterpret the magnitude and significance of the relationships between the data without acknowledging the shape of the distribution.  

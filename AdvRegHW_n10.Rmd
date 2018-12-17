@@ -1,0 +1,63 @@
+---
+title: "AdvRegMod"
+author: "Nashrah Ahmed"
+date: "February 20, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rstan)
+library(arm)
+library(rstanarm)
+library(reshape2)
+library(ggplot2)
+```
+
+##Chapter 9, Exercise 1
+```{r}
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+df <- read.delim2("pyth.txt", header = TRUE, sep = " ", dec = ".")
+write.table(df, file="pyth.dat", row.names=TRUE)
+pyth <- read.table("pyth.dat", header = TRUE)
+
+pyth_40 <- head.matrix(pyth, 40)
+pyth_20 <- tail.matrix(pyth, 20)
+
+lm1 <- lm(y ~ x1 + x2, data = pyth_40)
+display(lm1)
+
+colors <- ifelse(pyth_40$x1>0, "pink", "blue")
+plot(pyth_40$x2, pyth_40$y, xlab="x", ylab="y", col=colors, pch=20)
+b_hat <- coef(lm1)
+abline(b_hat[1] + b_hat[2], b_hat[3], col="blue")
+abline(b_hat[1], b_hat[3], col="pink")
+
+```
+```{r}
+y_hat <- fitted(lm1)
+u <- resid(lm1)
+sigma <- sigma.hat(lm1)
+
+residual.plot(y_hat, u, sigma)
+```
+```{r}
+newdata <- data.frame(x1 = pyth_20$x1, x2 = pyth_20$x2)
+predict <- predict(lm1, newdata, interval="predict")
+y_hat2 <- head(data.frame(y_hat), 20)
+y_hat3 <- tail(data.frame(y_hat), 20)
+predict2 <- as.data.frame(predict)
+
+bar1 <- cbind(y_hat = y_hat2, predict = predict2$fit)
+bar1$dif <- abs(bar1$y_hat - bar1$predict)
+bar2 <- cbind(y_hat = y_hat3, predict = predict2$fit)
+bar2$dif <- abs(bar2$y_hat - bar2$predict)
+
+barplot(bar1$dif)
+barplot(bar2$dif)
+
+```
+
+Shadow project: The exercises above were helpful in reviewing linear regression and assessing the accuracy of predictions. It was useful in reviewing the pros and cons of using basic linear regression, its limitations and predictive power. It was helpful to compare this frequentist approach to the previous bayesian approaches for linear regression and asses how the inclusion of priors may enhance the accuracy of predictions. 

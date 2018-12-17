@@ -1,0 +1,40 @@
+---
+title: "AdvRegHW_n15"
+author: "Nashrah Ahmed"
+date: "March 7, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Exercise 1, Chapter 10
+```{r}
+#log(weight) = -3.5 + 2.0log(height) + error
+setwd("/Users/Nashrah/Desktop/Columbia_QMSS/Spring 2018 Courses/Advanced Regression Modeling")
+Earnings <- read.csv("Earnings.csv", header = TRUE)
+n <- nrow(Earnings)
+Earnings$errors <- rnorm(n, 0, .25)
+Earnings$log_height <- log(Earnings$height)
+Earnings$log_weight <- -3.5 + 2*Earnings$log_height + Earnings$errors
+
+x <- mean(Earnings$log_weight)
+sd <- sd(Earnings$log_weight)
+
+error <- qnorm(0.68)*sd/sqrt(n)
+blank1 <- x-error
+print(blank1)
+blank2 <- x+error
+print(blank2)
+
+# blank(2)
+colors <- ifelse(Earnings$log_height>0, "pink", "blue")
+plot(Earnings$log_height, Earnings$log_weight, xlab="log_height", ylab="log_weight", col=colors, pch=20)
+abline(lm(Earnings$log_weight ~ Earnings$log_height), col="blue") # regression line (y~x) 
+
+```
+
+Shadow project: This exercise was helpful for continuing to think about transformations and how to interpret the results when using log functions.
